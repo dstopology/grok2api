@@ -71,7 +71,8 @@ jobs:
 
   check_ghcr_image:
     name: Build image (${{ matrix.arch }})
-    if: github.event_name != 'push'
+    # PR only: build without publishing
+    if: github.event_name == 'pull_request'
     needs: verify
     strategy:
       fail-fast: false
@@ -105,7 +106,8 @@ jobs:
 
   build_ghcr_image:
     name: Publish image (${{ matrix.arch }})
-    if: github.event_name == 'push'
+    # Publish on main/tag push and manual workflow_dispatch
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs: verify
     permissions:
       contents: read
@@ -169,7 +171,7 @@ jobs:
 
   merge:
     name: Merge image
-    if: github.event_name == 'push'
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     needs:
       - build_ghcr_image
     runs-on: ubuntu-latest
